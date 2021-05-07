@@ -1,7 +1,12 @@
+import org.ajoberstar.grgit.Grgit
+
+import java.time.ZoneOffset
+
 plugins {
     id("groovy") 
     id("com.github.johnrengelman.shadow") version "7.0.0"
     id("io.micronaut.application") version "1.5.0"
+    id("com.gorylenko.gradle-git-properties") version "2.2.4"
 }
 
 version = "0.1"
@@ -23,8 +28,10 @@ micronaut {
 dependencies {
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut.groovy:micronaut-runtime-groovy")
-    runtimeOnly("ch.qos.logback:logback-classic")
     implementation("io.micronaut:micronaut-validation")
+    implementation("io.micronaut:micronaut-management")
+
+    runtimeOnly("ch.qos.logback:logback-classic")
 }
 
 
@@ -34,6 +41,13 @@ application {
 java {
     sourceCompatibility = JavaVersion.toVersion("1.8")
     targetCompatibility = JavaVersion.toVersion("1.8")
+}
+
+gitProperties {
+    keys = ['serviceName', 'serviceVersion', 'buildDate']
+    customProperty 'serviceName', { "$serviceName" }
+    customProperty 'serviceVersion', { it.describe(tags: true) }
+    customProperty 'buildDate', { (it as Grgit).head().dateTime.withZoneSameInstant(ZoneOffset.UTC) }
 }
 
 
